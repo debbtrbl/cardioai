@@ -71,19 +71,19 @@ Clone o repositório:
 
 ```bash
 git clone https://github.com/isabelly-remigio/Classificador-insuficiencia-cardiaca.git
-cd Classificador-insuficiencia-cardiaca
+cd CardioAI
 ```
-
-Instale as dependências:
+Instale as dependências do projeto:
 
 ```bash
-pip install streamlit scikit-learn joblib pandas numpy matplotlib
+pip install -r requirements.txt
 ```
-
 ### ▶️ Rodando a aplicação
 
+Execute o aplicativo localmente com:
+
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 ## 📌 Requisitos
