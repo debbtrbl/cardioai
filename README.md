@@ -1,6 +1,6 @@
 
 
-# 🫀 Classificador de Insuficiência Cardíaca
+# 🫀 CardioAI: Classificador de Insuficiência Cardíaca
 
 Este projeto utiliza algoritmos de aprendizado de máquina para prever o risco de insuficiência cardíaca com base em atributos clínicos de pacientes. A aplicação foi desenvolvida com **Streamlit**, possibilitando uma interface interativa e acessível para usuários e profissionais da saúde.
 
@@ -70,8 +70,8 @@ HeartDisease: 1 (com risco)
 Clone o repositório:
 
 ```bash
-git clone https://github.com/isabelly-remigio/Classificador-insuficiencia-cardiaca.git
-cd CardioAI
+git clone https://github.com/debbtrbl/cardioai.git
+cd cardioai
 ```
 Instale as dependências do projeto:
 
