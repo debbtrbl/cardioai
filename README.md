@@ -4,6 +4,8 @@
 
 Este projeto utiliza algoritmos de aprendizado de máquina para prever o risco de insuficiência cardíaca com base em atributos clínicos de pacientes. A aplicação foi desenvolvida com **Streamlit**, possibilitando uma interface interativa e acessível para usuários e profissionais da saúde.
 
+🌐 Clique [aqui](https://cardioai-classificador.streamlit.app/) para acessar a Demo.
+
 ## 📊 Modelos de Machine Learning Utilizados
 
 Foram avaliados seis algoritmos supervisionados:
