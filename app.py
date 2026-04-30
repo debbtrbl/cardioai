@@ -1,21 +1,33 @@
 import streamlit as st
-import pickle
 import joblib
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-import joblib
+
+
+# CONFIGURAÇÃO DA PÁGINA
+
+st.set_page_config(page_title="CardioAI", page_icon="🫀", layout="wide")
+
+
+# CARREGAMENTO
 
 modelo = joblib.load('modelo_random_forest.pkl')
 df = pd.read_csv('heart.csv')
 
 
+# TÍTULO
+
+st.title("🫀 CardioAI - Classificador de Risco Cardíaco")
+st.markdown("Previsão de risco de doença cardíaca com base em dados clínicos do paciente.")
+
+
+# FUNÇÃO DE ENCODE
+
 def encode_inputs(sex, chest_pain_type, resting_ecg, exercise_angina, st_slope):
     sex_dict = {'M': 1, 'F': 0}
-    chest_pain_dict = {'ASY': 0, 'ATA': 1, 'NAP': 2, 'TA': 3} 
+    chest_pain_dict = {'ASY': 0, 'ATA': 1, 'NAP': 2, 'TA': 3}
     resting_ecg_dict = {'LVH': 0, 'Normal': 1, 'ST': 2}
     exercise_angina_dict = {'N': 0, 'Y': 1}
     st_slope_dict = {'Down': 0, 'Flat': 1, 'Up': 2}
@@ -29,88 +41,92 @@ def encode_inputs(sex, chest_pain_type, resting_ecg, exercise_angina, st_slope):
     ]
 
 
-modelo = joblib.load('modelo_random_forest.pkl')
+# SIDEBAR
+
+st.sidebar.header("🧾 Dados do Paciente")
+
+age = st.sidebar.number_input('Idade', 0, 120, 40)
+sex = st.sidebar.selectbox('Sexo', ['M', 'F'])
+chest_pain_type = st.sidebar.selectbox('Dor no Peito', ['ASY', 'ATA', 'NAP', 'TA'])
+resting_bp = st.sidebar.number_input('Pressão (mmHg)', 0, 200, 140)
+cholesterol = st.sidebar.number_input('Colesterol', 0, 600, 289)
+fasting_bs = st.sidebar.selectbox('Glicose em Jejum', [0, 1], format_func=lambda x: 'Normal' if x == 0 else 'Alterada')
+resting_ecg = st.sidebar.selectbox('ECG', ['Normal', 'ST', 'LVH'])
+max_hr = st.sidebar.number_input('Frequência Máxima', 0, 220, 150)
+exercise_angina = st.sidebar.selectbox('Angina Exercício', ['N', 'Y'])
+oldpeak = st.sidebar.number_input('Oldpeak', 0.0, 10.0, 0.0)
+st_slope = st.sidebar.selectbox('Inclinação ST', ['Up', 'Flat', 'Down'])
 
 
-st.sidebar.header("Insira os valores abaixo:")
+# INPUT
 
-age = st.sidebar.number_input('Idade (anos)', min_value=0, max_value=120, value=40)
-sex = st.sidebar.selectbox('Sexo', options=['M', 'F'])
-chest_pain_type = st.sidebar.selectbox('Tipo de Dor no Peito', options=['ASY', 'ATA', 'NAP', 'TA'])
-resting_bp = st.sidebar.number_input('Pressão Arterial em Repouso (mmHg)', min_value=0, max_value=200, value=140)
-cholesterol = st.sidebar.number_input('Colesterol (mg/dL)', min_value=0, max_value=600, value=289)
-fasting_bs = st.sidebar.selectbox('Glicose em Jejum', options=[0, 1], format_func=lambda x: 'Normal' if x == 0 else 'Alterada')
-resting_ecg = st.sidebar.selectbox('ECG em Repouso', options=['Normal', 'ST', 'LVH'])
-max_hr = st.sidebar.number_input('Frequência Cardíaca Máxima (bpm)', min_value=0, max_value=220, value=172)
-exercise_angina = st.sidebar.selectbox('Angina de Exercício', options=['N', 'Y'])
-oldpeak = st.sidebar.number_input('Oldpeak (Depressão ST)', min_value=0.0, max_value=10.0, value=0.0)
-st_slope = st.sidebar.selectbox('Inclinação do Segmento ST', options=['Up', 'Flat', 'Down'])
-
-
-encoded_inputs = encode_inputs(sex, chest_pain_type, resting_ecg, exercise_angina, st_slope)
-
+encoded = encode_inputs(sex, chest_pain_type, resting_ecg, exercise_angina, st_slope)
 
 input_data = np.array([
     age,
-    encoded_inputs[0], 
-    encoded_inputs[1],  
+    encoded[0],
+    encoded[1],
     resting_bp,
     cholesterol,
     fasting_bs,
-    encoded_inputs[2], 
+    encoded[2],
     max_hr,
-    encoded_inputs[3],  
+    encoded[3],
     oldpeak,
-    encoded_inputs[4]   
+    encoded[4]
 ])
 
 
-if st.sidebar.button("Prever"):
+# BOTÃO CENTRAL
+
+st.divider()
+
+if st.button("🔍 Fazer Previsão"):
     prediction = modelo.predict([input_data])[0]
-    
+
+    st.subheader("Resultado da Análise")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Idade", age)
+    with col2:
+        st.metric("Colesterol", cholesterol)
+    with col3:
+        st.metric("Pressão", resting_bp)
+
+    st.divider()
+
     if prediction == 1:
-        st.success("**Resultado: A pessoa é hipertensa.**")
+        st.error("⚠️ Alto risco de doença cardíaca")
     else:
-        st.info("**Resultado: A pessoa não é hipertensa.**")
+        st.success("✅ Baixo risco de doença cardíaca")
 
 
+# GRÁFICOS
 
+st.divider()
+st.subheader("📊 Análises do Modelo")
 
-if st.checkbox("Mostrar gráfico de importância das variáveis"):
-    st.subheader("Importância das Variáveis no Modelo")
-
-    
-    PREDITORAS = df.drop(columns=['HeartDisease'])  
-    feature_names = PREDITORAS.columns
+if st.checkbox("Importância das Variáveis"):
+    features = df.drop(columns=['HeartDisease']).columns
     importances = modelo.feature_importances_
 
-    df_importances = pd.DataFrame({
-        'Feature': feature_names,
+    df_imp = pd.DataFrame({
+        'Feature': features,
         'Importance': importances
     }).sort_values(by='Importance', ascending=False)
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x='Importance', y='Feature', data=df_importances, palette="viridis", ax=ax)
-    ax.set_title("Importância das Features - Random Forest")
-    ax.set_xlabel("Importância")
-    ax.set_ylabel("Variável")
+    sns.barplot(x='Importance', y='Feature', data=df_imp, ax=ax)
+    ax.set_title("Importância das Variáveis")
+
     st.pyplot(fig)
 
+if st.checkbox("Matriz de Correlação"):
+    corr = df.corr(numeric_only=True)
 
-
-
-if st.checkbox("Matriz de Correlação entre Variáveis"):
-    st.subheader("Matriz de Correlação entre Variáveis")
-
-
-    correlation_matrix = df.corr(numeric_only=True)
-
-
-    fig, ax = plt.subplots(figsize=(12, 8))
-
-
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5, ax=ax)
-    ax.set_title("Matriz de Correlação entre Variáveis")
-
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.heatmap(corr, annot=True, cmap='coolwarm', ax=ax)
 
     st.pyplot(fig)
